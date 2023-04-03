@@ -28,7 +28,7 @@ UNIQNAME    = nhicksn
 IDENTIFIER  = 5949F553E20B650AB0FB2266D3C0822B13D248B0
 
 # Change 'executable' to match the command name given in the project spec.
-EXECUTABLE  = amongus
+EXECUTABLE  = poke
 
 # The following line looks for a project's main() in files named project*.cpp,
 # executable.cpp (substituted from EXECUTABLE above), or main.cpp

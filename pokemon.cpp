@@ -6,8 +6,9 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
     std::ios::sync_with_stdio(false);
     cout << std::setprecision(2); //Always show 2 decimal places
     cout << std::fixed; //Disable scientific notation for large numbers
+    pokemon p(argc, argv);
 }
