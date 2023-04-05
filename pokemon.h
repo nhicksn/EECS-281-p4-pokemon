@@ -14,7 +14,7 @@ enum class Mode {
 
 struct vertex {
 
-}
+};
 
 class pokemon {
 
