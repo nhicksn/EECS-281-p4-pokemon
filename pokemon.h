@@ -12,6 +12,10 @@ enum class Mode {
     None
 };
 
+struct vertex {
+
+}
+
 class pokemon {
 
 private:
