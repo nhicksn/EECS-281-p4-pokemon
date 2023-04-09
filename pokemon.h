@@ -27,7 +27,7 @@ struct vertex {
     // only for part A
     TerrainType terrain;
     bool visited;
-    double distance;
+    double distance; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
 
     vertex() : x(0), y(0) { }
@@ -41,6 +41,7 @@ private:
 
     std::vector<vertex> map;
     Mode mode = Mode::None;
+    uint32_t numCoords;
 
     void printHelp() {
         std::cout << "Usage: ./poke [-h] || [-m && [MST || FASTTSP || OPTTSP]]\n";
@@ -97,11 +98,51 @@ private:
         } // if
     } //getMode
 
+    // FINDDISTANCE
+    // used by calculateMST to find the distance between two vertices
+    // returns infinity if they cannot be connected
+    double distance(vertex v1, vertex v2) {
+
+        // calculate euclidian distance and return
+        if(v1.terrain == v2.terrain || v1.terrain == TerrainType::Coast || v2.terrain == TerrainType::Coast) {
+            return (v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y);
+        }
+
+        return std::numeric_limits<double>::infinity();
+
+    }
 
     // PART A
     // CALCULATEMST
     // used by run sim once all the input has been done to do part A
     void calculateMST() {
+
+        // first vertex is starting point
+        map[0].distance = 0;
+
+        for(uint32_t i = 0; i < numCoords; i++) {
+            
+            // update distances
+            for(uint32_t j = 0; j < numCoords; j++) {
+
+                // make sure the node hasn't been visited
+                if(map[j].visited == true || j == i) {
+                    continue;
+                }
+
+                // calculate distance and see if it's better than the current distance
+                double dis = distance(map[i], map[j]);
+
+                // if so, update
+                if(dis < map[j].distance) {
+                    map[j].distance = dis;
+                    map[j].parentIndex = i;
+                }
+
+            }
+
+            
+        }
 
     }
 
@@ -129,7 +170,6 @@ public:
     void run() {
 
         // read the input
-        uint32_t numCoords; // maybe make this a member variable?
         std::cin >> numCoords;
         for(uint32_t i = 0; i < numCoords; i++) {
 
@@ -143,8 +183,7 @@ public:
             if(mode == Mode::MST) {
 
                 coord.visited = false;
-                if(i == 0) coord.distance = 0;
-                else coord.distance = std::numeric_limits<double>::infinity();
+                coord.distance = std::numeric_limits<double>::infinity();
 
                 // check terrain type
                 if(xIn > 0 || yIn > 0) coord.terrain = TerrainType::Land;
