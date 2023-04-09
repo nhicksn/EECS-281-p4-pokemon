@@ -4,6 +4,8 @@
 #define POKEMON_H
 #include <getopt.h>
 #include <iostream>
+#include <vector>
+#include <limits>
 
 enum class Mode {
     MST,
@@ -12,14 +14,32 @@ enum class Mode {
     None
 };
 
-struct vertex {
+enum class TerrainType {
+    Land,
+    Sea,
+    Coast
+};
 
+struct vertex {
+    int32_t x;
+    int32_t y;
+
+    // only for part A
+    TerrainType terrain;
+    bool visited;
+    double distance;
+    uint32_t parentIndex;
+
+    vertex() : x(0), y(0) { }
+    vertex(int32_t xIn, int32_t yIn) : x(xIn), y(yIn) { }
+    vertex(int32_t xIn, int32_t yIn, TerrainType tIn) : x(xIn), y(yIn), terrain(tIn) { }
 };
 
 class pokemon {
 
 private:
 
+    std::vector<vertex> map;
     Mode mode = Mode::None;
 
     void printHelp() {
@@ -77,10 +97,70 @@ private:
         } // if
     } //getMode
 
-public:
 
+    // PART A
+    // CALCULATEMST
+    // used by run sim once all the input has been done to do part A
+    void calculateMST() {
+
+    }
+
+    // PART B
+    // CALCULATEFASTTSP
+    // used by run sim once all the input has been done to do part B
+    void calculateFastTSP() {
+
+    }
+
+    // PART C
+    // CALCULATEOPTTSP
+    // used by run sim once all the input has been done to do part C
+    void calculateOptTSP() {
+
+    }
+
+public:
+    
     pokemon(int argc, char* argv[]) { getMode(argc, argv); }
 
+    // RUN
+    // called by the user to find the solution they're looking for, reads input
+    // and calls helper function to find the correct tree
+    void run() {
+
+        // read the input
+        uint32_t numCoords; // maybe make this a member variable?
+        std::cin >> numCoords;
+        for(uint32_t i = 0; i < numCoords; i++) {
+
+            // initialize coord with x and y coordinate
+            vertex coord;
+            int32_t xIn; std::cin >> xIn;
+            int32_t yIn; std::cin >> yIn;
+            coord.x = xIn; coord.y = yIn;
+
+            // fill in info needed for prims
+            if(mode == Mode::MST) {
+
+                coord.visited = false;
+                if(i == 0) coord.distance = 0;
+                else coord.distance = std::numeric_limits<double>::infinity();
+
+                // check terrain type
+                if(xIn > 0 || yIn > 0) coord.terrain = TerrainType::Land;
+                else if (xIn < 0 && yIn < 0) coord.terrain = TerrainType::Sea;
+                else coord.terrain = TerrainType::Coast;
+
+            }
+
+            map.push_back(coord);
+        }
+
+        if(mode == Mode::MST) calculateMST();
+        else if(mode == Mode::FASTTSP) calculateFastTSP();
+        else calculateOptTSP();
+
+    }
 };
 
 #endif
