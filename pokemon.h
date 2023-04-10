@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <cmath>
 
 enum class Mode {
     MST,
@@ -105,11 +106,34 @@ private:
 
         // calculate euclidian distance and return
         if(v1.terrain == v2.terrain || v1.terrain == TerrainType::Coast || v2.terrain == TerrainType::Coast) {
-            return (v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y);
+            return (static_cast<double>(v1.x - v2.x))*(static_cast<double>(v1.x - v2.x)) 
+                + (static_cast<double>(v1.y - v2.y))*(static_cast<double>(v1.y - v2.y));
         }
 
         return std::numeric_limits<double>::infinity();
 
+    }
+
+    // OUTPUTMST
+    // used by calculateMST to output the solution
+    void outputMST() {
+
+        double totalWeight = 0;
+        // need to find total weight of all edges
+        for(uint32_t i = 1; i < numCoords; i++) {
+            totalWeight += std::sqrt(map[i].distance);
+        }
+
+        std::cout << totalWeight << '\n';
+
+        for(uint32_t i = 1; i < numCoords; i++) {
+            if(map[i].parentIndex < i) {
+                std::cout << map[i].parentIndex << ' ' << i << '\n';
+            }
+            else {
+                std::cout << i << ' ' << map[i].parentIndex << '\n';
+            }
+        }
     }
 
     // PART A
@@ -120,29 +144,43 @@ private:
         // first vertex is starting point
         map[0].distance = 0;
 
+        uint32_t currentIndex = 0;
+        double minDistance;
+
         for(uint32_t i = 0; i < numCoords; i++) {
+
+            minDistance = std::numeric_limits<double>::infinity();
             
-            // update distances
+            // find the vertex with the smallest distance, use that as current node
             for(uint32_t j = 0; j < numCoords; j++) {
-
-                // make sure the node hasn't been visited
-                if(map[j].visited == true || j == i) {
-                    continue;
+                if(map[j].visited == false && map[j].distance < minDistance) {
+                    minDistance = map[j].distance;
+                    currentIndex = j;
                 }
-
-                // calculate distance and see if it's better than the current distance
-                double dis = distance(map[i], map[j]);
-
-                // if so, update
-                if(dis < map[j].distance) {
-                    map[j].distance = dis;
-                    map[j].parentIndex = i;
-                }
-
             }
 
-            
+            if(minDistance == std::numeric_limits<double>::infinity()) {
+                std::cerr << "Cannot construct MST\n";
+                std::exit(1);
+            }
+            //
+
+            // set current node to visited
+            map[currentIndex].visited = true;
+
+            // update all distances
+            for(uint32_t j = 0; j < numCoords; j++) {
+                double dis = distance(map[currentIndex], map[j]);
+                if(map[j].visited == false && dis < map[j].distance) {
+                    map[j].distance = dis;
+                    map[j].parentIndex = currentIndex;
+                }
+            }
+            //
+
         }
+
+        outputMST();
 
     }
 

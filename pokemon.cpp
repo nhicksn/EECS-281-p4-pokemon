@@ -11,4 +11,5 @@ int main(int argc, char* argv[]) {
     cout << std::setprecision(2); //Always show 2 decimal places
     cout << std::fixed; //Disable scientific notation for large numbers
     pokemon p(argc, argv);
+    p.run();
 }
