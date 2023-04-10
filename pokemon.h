@@ -32,10 +32,10 @@ struct primsInfo {
 struct vertex {
     int32_t x;
     int32_t y;
-    primsInfo prims;    
+    primsInfo prims;
 
     vertex() : x(0), y(0) { }
-    vertex(int32_t xIn, int32_t yIn) : x(xIn), y(yIn) { }
+    vertex(const int32_t &xIn, const int32_t &yIn) : x(xIn), y(yIn) { }
 };
 
 class pokemon {
@@ -45,6 +45,8 @@ private:
     std::vector<vertex> map;
     Mode mode = Mode::None;
     uint32_t numCoords;
+
+    double upperBound; // for part B
 
     void printHelp() {
         std::cout << "Usage: ./poke [-h] || [-m && [MST || FASTTSP || OPTTSP]]\n";
@@ -104,7 +106,7 @@ private:
     // FINDDISTANCE
     // used by calculateMST to find the distance between two vertices
     // returns infinity if they cannot be connected
-    double distance(vertex v1, vertex v2) {
+    double distance(const vertex &v1, const vertex &v2) {
 
         // calculate euclidian distance and return
         if(v1.prims.terrain == v2.prims.terrain || v1.prims.terrain == TerrainType::Coast || v2.prims.terrain == TerrainType::Coast) {
@@ -117,16 +119,10 @@ private:
     }
 
     // OUTPUTMST
-    // used by calculateMST to output the solution
+    // used by run to output the solution
     void outputMST() {
 
-        double totalWeight = 0;
-        // need to find total weight of all edges
-        for(uint32_t i = 1; i < numCoords; i++) {
-            totalWeight += std::sqrt(map[i].prims.distance);
-        }
-
-        std::cout << totalWeight << '\n';
+        std::cout << calculateMST() << '\n';
 
         for(uint32_t i = 1; i < numCoords; i++) {
             if(map[i].prims.parentIndex < i) {
@@ -136,12 +132,13 @@ private:
                 std::cout << i << ' ' << map[i].prims.parentIndex << '\n';
             }
         }
+
     }
 
     // PART A
     // CALCULATEMST
-    // used by run sim once all the input has been done to do part A
-    void calculateMST() {
+    // used by outputMST and calculate FASTTSP to find the MST
+    double calculateMST() {
 
         // first vertex is starting point
         map[0].prims.distance = 0;
@@ -160,7 +157,10 @@ private:
                     currentIndex = j;
                 }
             }
+            //
 
+            // verify that a valid node has been found
+            // i.e. check that an MST can be constructed
             if(minDistance == std::numeric_limits<double>::infinity()) {
                 std::cerr << "Cannot construct MST\n";
                 std::exit(1);
@@ -171,8 +171,9 @@ private:
             map[currentIndex].prims.visited = true;
 
             // update all distances
+            double dis;
             for(uint32_t j = 0; j < numCoords; j++) {
-                double dis = distance(map[currentIndex], map[j]);
+                dis = distance(map[currentIndex], map[j]);
                 if(map[j].prims.visited == false && dis < map[j].prims.distance) {
                     map[j].prims.distance = dis;
                     map[j].prims.parentIndex = currentIndex;
@@ -182,15 +183,53 @@ private:
 
         }
 
-        outputMST();
+        double totalWeight = 0;
+
+        // need to find total weight of all edges
+        for(uint32_t i = 1; i < numCoords; i++) {
+            totalWeight += std::sqrt(map[i].prims.distance);
+        }
+
+        return totalWeight;
 
     }
+
+    bool promising(const std::vector<vertex> &path, size_t permLength) {
+        // do things
+        path[0]; permLength++; // for compilation
+        return true;
+    }
+
+    void genPerms(std::vector<vertex> &path, size_t permLength) {
+        if (permLength == path.size()) {
+            // Do something with the path
+            return;
+        }  // if ..complete path
+
+        if (!promising(path, permLength)) {
+            return;
+        }  // if ..not promising
+
+        for (size_t i = permLength; i < path.size(); ++i) {
+            std::swap(path[permLength], path[i]);
+            genPerms(path, permLength + 1);
+            std::swap(path[permLength], path[i]);
+        }  // for ..unpermuted elements
+    }  // genPerms()
 
     // PART B
     // CALCULATEFASTTSP
     // used by run sim once all the input has been done to do part B
     void calculateFastTSP() {
 
+        // not sure if this is right
+        upperBound = calculateMST();
+
+        std::vector<vertex> path; path.reserve(numCoords);
+
+        genPerms(path, numCoords);
+
+        // output path
     }
 
     // PART C
@@ -202,7 +241,7 @@ private:
 
 public:
     
-    pokemon(int argc, char* argv[]) { getMode(argc, argv); }
+    pokemon(const int &argc, char* argv[]) { getMode(argc, argv); }
 
     // RUN
     // called by the user to find the solution they're looking for, reads input
@@ -235,7 +274,7 @@ public:
             map.push_back(coord);
         }
 
-        if(mode == Mode::MST) calculateMST();
+        if(mode == Mode::MST) outputMST();
         else if(mode == Mode::FASTTSP) calculateFastTSP();
         else calculateOptTSP();
 

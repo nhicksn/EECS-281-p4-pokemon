@@ -1,5 +1,4 @@
-template <typename T>
-void genPerms(vector<T> &path, size_t permLength) {
+void genPerms(vector<vertex> &path, size_t permLength) {
   if (permLength == path.size()) {
   // Do something with the path
     return;
