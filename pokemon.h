@@ -21,19 +21,21 @@ enum class TerrainType {
     Coast
 };
 
-struct vertex {
-    int32_t x;
-    int32_t y;
-
-    // only for part A
+// only for part A
+struct primsInfo {
     TerrainType terrain;
     bool visited;
     double distance; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
+};
+
+struct vertex {
+    int32_t x;
+    int32_t y;
+    primsInfo prims;    
 
     vertex() : x(0), y(0) { }
     vertex(int32_t xIn, int32_t yIn) : x(xIn), y(yIn) { }
-    vertex(int32_t xIn, int32_t yIn, TerrainType tIn) : x(xIn), y(yIn), terrain(tIn) { }
 };
 
 class pokemon {
@@ -105,7 +107,7 @@ private:
     double distance(vertex v1, vertex v2) {
 
         // calculate euclidian distance and return
-        if(v1.terrain == v2.terrain || v1.terrain == TerrainType::Coast || v2.terrain == TerrainType::Coast) {
+        if(v1.prims.terrain == v2.prims.terrain || v1.prims.terrain == TerrainType::Coast || v2.prims.terrain == TerrainType::Coast) {
             return (static_cast<double>(v1.x - v2.x))*(static_cast<double>(v1.x - v2.x)) 
                 + (static_cast<double>(v1.y - v2.y))*(static_cast<double>(v1.y - v2.y));
         }
@@ -121,17 +123,17 @@ private:
         double totalWeight = 0;
         // need to find total weight of all edges
         for(uint32_t i = 1; i < numCoords; i++) {
-            totalWeight += std::sqrt(map[i].distance);
+            totalWeight += std::sqrt(map[i].prims.distance);
         }
 
         std::cout << totalWeight << '\n';
 
         for(uint32_t i = 1; i < numCoords; i++) {
-            if(map[i].parentIndex < i) {
-                std::cout << map[i].parentIndex << ' ' << i << '\n';
+            if(map[i].prims.parentIndex < i) {
+                std::cout << map[i].prims.parentIndex << ' ' << i << '\n';
             }
             else {
-                std::cout << i << ' ' << map[i].parentIndex << '\n';
+                std::cout << i << ' ' << map[i].prims.parentIndex << '\n';
             }
         }
     }
@@ -142,7 +144,7 @@ private:
     void calculateMST() {
 
         // first vertex is starting point
-        map[0].distance = 0;
+        map[0].prims.distance = 0;
 
         uint32_t currentIndex = 0;
         double minDistance;
@@ -153,8 +155,8 @@ private:
             
             // find the vertex with the smallest distance, use that as current node
             for(uint32_t j = 0; j < numCoords; j++) {
-                if(map[j].visited == false && map[j].distance < minDistance) {
-                    minDistance = map[j].distance;
+                if(map[j].prims.visited == false && map[j].prims.distance < minDistance) {
+                    minDistance = map[j].prims.distance;
                     currentIndex = j;
                 }
             }
@@ -166,14 +168,14 @@ private:
             //
 
             // set current node to visited
-            map[currentIndex].visited = true;
+            map[currentIndex].prims.visited = true;
 
             // update all distances
             for(uint32_t j = 0; j < numCoords; j++) {
                 double dis = distance(map[currentIndex], map[j]);
-                if(map[j].visited == false && dis < map[j].distance) {
-                    map[j].distance = dis;
-                    map[j].parentIndex = currentIndex;
+                if(map[j].prims.visited == false && dis < map[j].prims.distance) {
+                    map[j].prims.distance = dis;
+                    map[j].prims.parentIndex = currentIndex;
                 }
             }
             //
@@ -220,13 +222,13 @@ public:
             // fill in info needed for prims
             if(mode == Mode::MST) {
 
-                coord.visited = false;
-                coord.distance = std::numeric_limits<double>::infinity();
+                coord.prims.visited = false;
+                coord.prims.distance = std::numeric_limits<double>::infinity();
 
                 // check terrain type
-                if(xIn > 0 || yIn > 0) coord.terrain = TerrainType::Land;
-                else if (xIn < 0 && yIn < 0) coord.terrain = TerrainType::Sea;
-                else coord.terrain = TerrainType::Coast;
+                if(xIn > 0 || yIn > 0) coord.prims.terrain = TerrainType::Land;
+                else if (xIn < 0 && yIn < 0) coord.prims.terrain = TerrainType::Sea;
+                else coord.prims.terrain = TerrainType::Coast;
 
             }
 
