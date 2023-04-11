@@ -162,7 +162,7 @@ private:
 
             // verify that a valid node has been found
             // i.e. check that an MST can be constructed
-            if(minDistance == std::numeric_limits<double>::infinity()) {
+            if(minDistance == DBL_MAX) {
                 std::cerr << "Cannot construct MST\n";
                 std::exit(1);
             }
