@@ -5,7 +5,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <vector>
-#include <limits>
+#include <cfloat>
 #include <cmath>
 
 enum class Mode {
@@ -24,15 +24,14 @@ enum class TerrainType {
 // only for part A
 struct primsInfo {
     TerrainType terrain;
-    bool visited;
-    double distance; // will be the distance squared --> square root when outputting!
+    bool visited = false;
+    double distance = DBL_MAX; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
 };
 
 struct vertex {
     int32_t x;
     int32_t y;
-    primsInfo prims;
 
     vertex() : x(0), y(0) { }
     vertex(const int32_t &xIn, const int32_t &yIn) : x(xIn), y(yIn) { }
@@ -45,6 +44,8 @@ private:
     std::vector<vertex> map;
     Mode mode = Mode::None;
     uint32_t numCoords;
+
+    std::vector<primsInfo> prims; // for part A
 
     double upperBound; // for part B
 
@@ -106,15 +107,15 @@ private:
     // FINDDISTANCE
     // used by calculateMST to find the distance between two vertices
     // returns infinity if they cannot be connected
-    double distance(const vertex &v1, const vertex &v2) {
+    double distance(const uint32_t &index1, const uint32_t &index2) {
 
         // calculate euclidian distance and return
-        if(v1.prims.terrain == v2.prims.terrain || v1.prims.terrain == TerrainType::Coast || v2.prims.terrain == TerrainType::Coast) {
-            return (static_cast<double>(v1.x - v2.x))*(static_cast<double>(v1.x - v2.x)) 
-                + (static_cast<double>(v1.y - v2.y))*(static_cast<double>(v1.y - v2.y));
+        if(prims[index1].terrain == prims[index2].terrain || prims[index1].terrain == TerrainType::Coast || prims[index2].terrain == TerrainType::Coast) {
+            return (static_cast<double>(map[index1].x - map[index2].x))*(static_cast<double>(map[index1].x - map[index2].x)) 
+                + (static_cast<double>(map[index1].y - map[index2].y))*(static_cast<double>(map[index1].y - map[index2].y));
         }
 
-        return std::numeric_limits<double>::infinity();
+        return DBL_MAX;
 
     }
 
@@ -125,11 +126,11 @@ private:
         std::cout << calculateMST() << '\n';
 
         for(uint32_t i = 1; i < numCoords; i++) {
-            if(map[i].prims.parentIndex < i) {
-                std::cout << map[i].prims.parentIndex << ' ' << i << '\n';
+            if(prims[i].parentIndex < i) {
+                std::cout << prims[i].parentIndex << ' ' << i << '\n';
             }
             else {
-                std::cout << i << ' ' << map[i].prims.parentIndex << '\n';
+                std::cout << i << ' ' << prims[i].parentIndex << '\n';
             }
         }
 
@@ -141,19 +142,19 @@ private:
     double calculateMST() {
 
         // first vertex is starting point
-        map[0].prims.distance = 0;
+        prims[0].distance = 0;
 
         uint32_t currentIndex = 0;
         double minDistance;
 
         for(uint32_t i = 0; i < numCoords; i++) {
 
-            minDistance = std::numeric_limits<double>::infinity();
+            minDistance = DBL_MAX;
             
             // find the vertex with the smallest distance, use that as current node
             for(uint32_t j = 0; j < numCoords; j++) {
-                if(map[j].prims.visited == false && map[j].prims.distance < minDistance) {
-                    minDistance = map[j].prims.distance;
+                if(prims[j].visited == false && prims[j].distance < minDistance) {
+                    minDistance = prims[j].distance;
                     currentIndex = j;
                 }
             }
@@ -168,15 +169,15 @@ private:
             //
 
             // set current node to visited
-            map[currentIndex].prims.visited = true;
+            prims[currentIndex].visited = true;
 
             // update all distances
             double dis;
             for(uint32_t j = 0; j < numCoords; j++) {
-                dis = distance(map[currentIndex], map[j]);
-                if(map[j].prims.visited == false && dis < map[j].prims.distance) {
-                    map[j].prims.distance = dis;
-                    map[j].prims.parentIndex = currentIndex;
+                dis = distance(currentIndex, j);
+                if(prims[j].visited == false && dis < prims[j].distance) {
+                    prims[j].distance = dis;
+                    prims[j].parentIndex = currentIndex;
                 }
             }
             //
@@ -187,7 +188,7 @@ private:
 
         // need to find total weight of all edges
         for(uint32_t i = 1; i < numCoords; i++) {
-            totalWeight += std::sqrt(map[i].prims.distance);
+            totalWeight += std::sqrt(prims[i].distance);
         }
 
         return totalWeight;
@@ -250,6 +251,8 @@ public:
 
         // read the input
         std::cin >> numCoords;
+        map.reserve(numCoords);
+        if(mode == Mode::MST) prims.reserve(numCoords);
         for(uint32_t i = 0; i < numCoords; i++) {
 
             // initialize coord with x and y coordinate
@@ -261,13 +264,14 @@ public:
             // fill in info needed for prims
             if(mode == Mode::MST) {
 
-                coord.prims.visited = false;
-                coord.prims.distance = std::numeric_limits<double>::infinity();
+                primsInfo coordInfo;
 
                 // check terrain type
-                if(xIn > 0 || yIn > 0) coord.prims.terrain = TerrainType::Land;
-                else if (xIn < 0 && yIn < 0) coord.prims.terrain = TerrainType::Sea;
-                else coord.prims.terrain = TerrainType::Coast;
+                if(xIn > 0 || yIn > 0) coordInfo.terrain = TerrainType::Land;
+                else if (xIn < 0 && yIn < 0) coordInfo.terrain = TerrainType::Sea;
+                else coordInfo.terrain = TerrainType::Coast;
+
+                prims.push_back(coordInfo);
 
             }
 
