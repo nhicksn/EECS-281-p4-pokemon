@@ -25,7 +25,7 @@ enum class TerrainType {
 struct primsInfo {
     TerrainType terrain;
     bool visited = false;
-    double distance = DBL_MAX; // will be the distance squared --> square root when outputting!
+    uint32_t distance = UINT32_MAX; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
 };
 
@@ -149,7 +149,7 @@ private:
 
         for(uint32_t i = 0; i < numCoords; i++) {
 
-            minDistance = DBL_MAX;
+            minDistance = UINT32_MAX;
             
             // find the vertex with the smallest distance, use that as current node
             for(uint32_t j = 0; j < numCoords; j++) {
@@ -162,7 +162,7 @@ private:
 
             // verify that a valid node has been found
             // i.e. check that an MST can be constructed
-            if(minDistance == DBL_MAX) {
+            if(minDistance == UINT32_MAX) {
                 std::cerr << "Cannot construct MST\n";
                 std::exit(1);
             }
@@ -176,7 +176,7 @@ private:
             for(uint32_t j = 0; j < numCoords; j++) {
                 dis = distance(currentIndex, j);
                 if(prims[j].visited == false && dis < prims[j].distance) {
-                    prims[j].distance = dis;
+                    prims[j].distance = static_cast<uint32_t>(dis);
                     prims[j].parentIndex = currentIndex;
                 }
             }
@@ -223,14 +223,6 @@ private:
     // used by run sim once all the input has been done to do part B
     void calculateFastTSP() {
 
-        // not sure if this is right
-        upperBound = calculateMST();
-
-        std::vector<vertex> path; path.reserve(numCoords);
-
-        genPerms(path, numCoords);
-
-        // output path
     }
 
     // PART C
