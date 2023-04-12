@@ -195,14 +195,57 @@ private:
 
     }
 
+    double distanceTSP(uint32_t &index1, uint32_t &index2) {
+        return std::sqrt(static_cast<double>(map[index1].x - map[index2].x) * static_cast<double>(map[index1].x - map[index2].x) +
+                static_cast<double>(map[index1].y - map[index2].y) * static_cast<double>(map[index1].y - map[index2].y));
+    }
+
+    // PART B
+    // CALCULATEFASTTSP --> TODO
+    // used by run sim once all the input has been done to do part B
+    void calculateFastTSP() {
+
+        std::vector<uint32_t> path; path.reserve(numCoords + 1);
+        path.push_back(0); path.push_back(1);
+        path.push_back(2); path.push_back(0);
+
+        // path starts out with A -> B -> C -> A
+
+        for(uint32_t i = 3; i < numCoords; i++) {
+            // steps 3 & 4
+        }
+
+        double totalWeight = 0;
+
+        // calculate weight
+        for(uint32_t i = 0; i < numCoords; i++) {
+            totalWeight += distanceTSP(path[i], path[i + 1]);
+        }
+
+        std::cout << totalWeight << '\n';
+
+        for(uint32_t i = 0; i < numCoords; i++) {
+            std::cout << path[i] << ' ';
+        }
+
+        std::cout << '\n';
+
+    }
+
+    // PROMISING --> TODO
+    // used by genPerms to see if a partial solution should be pruned
     bool promising(const std::vector<vertex> &path, size_t permLength) {
         // do things
         path[0]; permLength++; // for compilation
         return true;
     }
 
+    // GENPERMS --> TODO
+    // finds the optimal TSP solution
+    // used by calculateOPTTSP for part C
     void genPerms(std::vector<vertex> &path, size_t permLength) {
-        if (permLength == path.size()) {
+        if (permLength == path.size()) { // solution is complete
+            // check if this solution is better than the previous best
             // Do something with the path
             return;
         }  // if ..complete path
@@ -218,15 +261,8 @@ private:
         }  // for ..unpermuted elements
     }  // genPerms()
 
-    // PART B
-    // CALCULATEFASTTSP
-    // used by run sim once all the input has been done to do part B
-    void calculateFastTSP() {
-
-    }
-
     // PART C
-    // CALCULATEOPTTSP
+    // CALCULATEOPTTSP --> TODO
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
 
