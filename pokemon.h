@@ -210,11 +210,18 @@ private:
         path.push_back(2); path.push_back(0);
 
         // path starts out with A -> B -> C -> A
-
+        double calcDistance;
+        uint32_t bestIndex;
         for(uint32_t i = 3; i < numCoords; i++) {
-            for(uint32_t j = 0; j < i; j++) {
-                // minimize added path length, not sure how
+            double minDistance = DBL_MAX;
+            for(uint32_t j = 0; j < path.size() - 1; j++) {
+                calcDistance = distanceTSP(path[j], i) + distanceTSP(i, path[j + 1]) - distanceTSP(path[j], path[j + 1]);
+                if(minDistance > calcDistance) {
+                    minDistance = calcDistance;
+                    bestIndex = j + 1;
+                }
             }
+            path.insert(path.begin() + bestIndex, i);
         }
 
         double totalWeight = 0;
