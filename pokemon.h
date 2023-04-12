@@ -212,7 +212,9 @@ private:
         // path starts out with A -> B -> C -> A
 
         for(uint32_t i = 3; i < numCoords; i++) {
-            // steps 3 & 4
+            for(uint32_t j = 0; j < i; j++) {
+                // minimize added path length, not sure how
+            }
         }
 
         double totalWeight = 0;
