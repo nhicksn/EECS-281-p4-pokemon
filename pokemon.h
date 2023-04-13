@@ -246,6 +246,7 @@ private:
     // PROMISING --> TODO
     // used by genPerms to see if a partial solution should be pruned
     bool promising(const std::vector<vertex> &path, size_t permLength) {
+        // testing new commit
         // do things
         path[0]; permLength++; // for compilation
         return true;
