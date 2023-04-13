@@ -208,12 +208,12 @@ private:
         std::vector<uint32_t> path; path.reserve(numCoords + 1);
         path.push_back(0); path.push_back(1);
         path.push_back(2); path.push_back(0);
+        // path starts out with A -> B -> C -> A
 
         double minDistance;
-
-        // path starts out with A -> B -> C -> A
         double calcDistance;
         uint32_t bestIndex;
+
         for(uint32_t i = 3; i < numCoords; i++) {
             minDistance = DBL_MAX;
             for(uint32_t j = 0; j < path.size() - 1; j++) {
