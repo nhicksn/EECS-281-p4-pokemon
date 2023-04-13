@@ -195,13 +195,16 @@ private:
 
     }
 
+    // DISTANCETSP
+    // calculates the distance between two points, disregarding terrain constraints
+    // used by calculateFastTsp and calculateOptTSP
     double distanceTSP(uint32_t &index1, uint32_t &index2) {
         return std::sqrt(double(map[index1].x - map[index2].x) * double(map[index1].x - map[index2].x) +
                 double(map[index1].y - map[index2].y) * double(map[index1].y - map[index2].y));
     }
 
     // PART B
-    // CALCULATEFASTTSP --> TODO
+    // CALCULATEFASTTSP
     // used by run sim once all the input has been done to do part B
     void calculateFastTSP() {
 
@@ -220,10 +223,10 @@ private:
                 calcDistance = distanceTSP(path[j], i) + distanceTSP(i, path[j + 1]) - distanceTSP(path[j], path[j + 1]);
                 if(minDistance > calcDistance) {
                     minDistance = calcDistance;
-                    bestIndex = j + 1;
+                    bestIndex = j;
                 }
             }
-            path.insert(path.begin() + bestIndex, i);
+            path.insert(path.begin() + bestIndex + 1, i);
         }
 
         double totalWeight = 0;
