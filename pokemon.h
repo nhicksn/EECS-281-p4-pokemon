@@ -111,8 +111,8 @@ private:
 
         // calculate euclidian distance and return
         if(prims[index1].terrain == prims[index2].terrain || prims[index1].terrain == TerrainType::Coast || prims[index2].terrain == TerrainType::Coast) {
-            return (static_cast<double>(map[index1].x - map[index2].x))*(static_cast<double>(map[index1].x - map[index2].x)) 
-                + (static_cast<double>(map[index1].y - map[index2].y))*(static_cast<double>(map[index1].y - map[index2].y));
+            return double(map[index1].x - map[index2].x)*double(map[index1].x - map[index2].x) 
+                + double(map[index1].y - map[index2].y)*double(map[index1].y - map[index2].y);
         }
 
         return DBL_MAX;
@@ -176,7 +176,7 @@ private:
             for(uint32_t j = 0; j < numCoords; j++) {
                 dis = distance(currentIndex, j);
                 if(prims[j].visited == false && dis < prims[j].distance) {
-                    prims[j].distance = static_cast<uint32_t>(dis);
+                    prims[j].distance = uint32_t(dis);
                     prims[j].parentIndex = currentIndex;
                 }
             }
@@ -196,8 +196,8 @@ private:
     }
 
     double distanceTSP(uint32_t &index1, uint32_t &index2) {
-        return std::sqrt(static_cast<double>(map[index1].x - map[index2].x) * static_cast<double>(map[index1].x - map[index2].x) +
-                static_cast<double>(map[index1].y - map[index2].y) * static_cast<double>(map[index1].y - map[index2].y));
+        return std::sqrt(double(map[index1].x - map[index2].x) * double(map[index1].x - map[index2].x) +
+                double(map[index1].y - map[index2].y) * double(map[index1].y - map[index2].y));
     }
 
     // PART B
@@ -209,11 +209,13 @@ private:
         path.push_back(0); path.push_back(1);
         path.push_back(2); path.push_back(0);
 
+        double minDistance;
+
         // path starts out with A -> B -> C -> A
         double calcDistance;
         uint32_t bestIndex;
         for(uint32_t i = 3; i < numCoords; i++) {
-            double minDistance = DBL_MAX;
+            minDistance = DBL_MAX;
             for(uint32_t j = 0; j < path.size() - 1; j++) {
                 calcDistance = distanceTSP(path[j], i) + distanceTSP(i, path[j + 1]) - distanceTSP(path[j], path[j + 1]);
                 if(minDistance > calcDistance) {
