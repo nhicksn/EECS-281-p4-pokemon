@@ -47,7 +47,7 @@ private:
 
     std::vector<primsInfo> prims; // for part A
 
-    double upperBound; // for part B
+    double upperBound; // for part C
 
     void printHelp() {
         std::cout << "Usage: ./poke [-h] || [-m && [MST || FASTTSP || OPTTSP]]\n";
@@ -119,33 +119,17 @@ private:
 
     }
 
-    // OUTPUTMST
-    // used by run to output the solution
-    void outputMST() {
-
-        std::cout << calculateMST() << '\n';
-
-        for(uint32_t i = 1; i < numCoords; i++) {
-            if(prims[i].parentIndex < i) {
-                std::cout << prims[i].parentIndex << ' ' << i << '\n';
-            }
-            else {
-                std::cout << i << ' ' << prims[i].parentIndex << '\n';
-            }
-        }
-
-    }
-
     // PART A
     // CALCULATEMST
-    // used by outputMST and calculate FASTTSP to find the MST
-    double calculateMST() {
+    // used by run to find the MST
+    void calculateMST() {
 
         // first vertex is starting point
         prims[0].distance = 0;
 
         uint32_t currentIndex = 0;
         double minDistance;
+        double dis;
 
         for(uint32_t i = 0; i < numCoords; i++) {
 
@@ -172,7 +156,6 @@ private:
             prims[currentIndex].visited = true;
 
             // update all distances
-            double dis;
             for(uint32_t j = 0; j < numCoords; j++) {
                 dis = distance(currentIndex, j);
                 if(prims[j].visited == false && dis < prims[j].distance) {
@@ -191,7 +174,16 @@ private:
             totalWeight += std::sqrt(prims[i].distance);
         }
 
-        return totalWeight;
+        std::cout << totalWeight << '\n';
+
+        for(uint32_t i = 1; i < numCoords; i++) {
+            if(prims[i].parentIndex < i) {
+                std::cout << prims[i].parentIndex << ' ' << i << '\n';
+            }
+            else {
+                std::cout << i << ' ' << prims[i].parentIndex << '\n';
+            }
+        }
 
     }
 
@@ -206,7 +198,7 @@ private:
     // PART B
     // CALCULATEFASTTSP
     // used by run sim once all the input has been done to do part B
-    void calculateFastTSP() {
+    double calculateFastTSP(bool output) {
 
         std::vector<uint32_t> path; path.reserve(numCoords + 1);
         path.push_back(0); path.push_back(1);
@@ -236,14 +228,17 @@ private:
             totalWeight += distanceTSP(path[i], path[i + 1]);
         }
 
-        std::cout << totalWeight << '\n';
+        if(output) {
+            std::cout << totalWeight << '\n';
 
-        for(uint32_t i = 0; i < numCoords; i++) {
-            std::cout << path[i] << ' ';
+            for(uint32_t i = 0; i < numCoords; i++) {
+                std::cout << path[i] << ' ';
+            }
+
+            std::cout << '\n';
         }
 
-        std::cout << '\n';
-
+        return totalWeight;
     }
 
     // PROMISING --> TODO
@@ -295,6 +290,7 @@ public:
         std::cin >> numCoords;
         map.reserve(numCoords);
         if(mode == Mode::MST) prims.reserve(numCoords);
+        
         for(uint32_t i = 0; i < numCoords; i++) {
 
             // initialize coord with x and y coordinate
@@ -320,8 +316,8 @@ public:
             map.push_back(coord);
         }
 
-        if(mode == Mode::MST) outputMST();
-        else if(mode == Mode::FASTTSP) calculateFastTSP();
+        if(mode == Mode::MST) calculateMST();
+        else if(mode == Mode::FASTTSP) calculateFastTSP(true);
         else calculateOptTSP();
 
     }
