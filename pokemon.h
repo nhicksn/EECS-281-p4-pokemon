@@ -198,7 +198,7 @@ private:
     // PART B
     // CALCULATEFASTTSP
     // used by run sim once all the input has been done to do part B
-    double calculateFastTSP(bool output) {
+    double calculateFastTSP(const bool &output) {
 
         std::vector<uint32_t> path; path.reserve(numCoords + 1);
         path.push_back(0); path.push_back(1);
