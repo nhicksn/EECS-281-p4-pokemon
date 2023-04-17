@@ -249,6 +249,12 @@ private:
     // PROMISING --> TODO
     // used by genPerms to see if a partial solution should be pruned
     bool promising(const std::vector<vertex> &path, size_t permLength) {
+
+        // from IA notes:
+        // calculate MST of remaining vertices, and connect it to the partial solution
+        // with the shortest arms possible
+        // compare to the upper bound, and decide if promising
+
         // do things
         path[0]; permLength++; // for compilation
 
