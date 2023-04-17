@@ -48,6 +48,7 @@ private:
     std::vector<primsInfo> prims; // for part A
 
     double upperBound; // for part C
+    std::vector<vertex> optPath; // for part C
 
     void printHelp() {
         std::cout << "Usage: ./poke [-h] || [-m && [MST || FASTTSP || OPTTSP]]\n";
@@ -122,7 +123,7 @@ private:
     // PART A
     // CALCULATEMST
     // used by run to find the MST
-    void calculateMST() {
+    double calculateMST(const bool &output) {
 
         // first vertex is starting point
         prims[0].distance = 0;
@@ -174,6 +175,8 @@ private:
             totalWeight += std::sqrt(prims[i].distance);
         }
 
+        if(!output) return totalWeight;
+
         std::cout << totalWeight << '\n';
 
         for(uint32_t i = 1; i < numCoords; i++) {
@@ -185,12 +188,14 @@ private:
             }
         }
 
+        return totalWeight;
+
     }
 
     // DISTANCETSP
     // calculates the distance between two points, disregarding terrain constraints
     // used by calculateFastTsp and calculateOptTSP
-    double distanceTSP(uint32_t &index1, uint32_t &index2) {
+    double distanceTSP(const uint32_t &index1, const uint32_t &index2) {
         return std::sqrt(double(map[index1].x - map[index2].x) * double(map[index1].x - map[index2].x) +
                 double(map[index1].y - map[index2].y) * double(map[index1].y - map[index2].y));
     }
@@ -253,8 +258,7 @@ private:
     // finds the optimal TSP solution
     // used by calculateOPTTSP for part C
     void genPerms(std::vector<vertex> &path, size_t permLength) {
-        if (permLength == path.size()) { // solution is complete
-            // check if this solution is better than the previous best
+        if (permLength == path.size()) {
             // Do something with the path
             return;
         }  // if ..complete path
@@ -270,11 +274,14 @@ private:
         }  // for ..unpermuted elements
     }  // genPerms()
 
+
     // PART C
     // CALCULATEOPTTSP --> TODO
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
-
+        optPath.reserve(map.size());
+        optPath.push_back(map[0]);
+        genPerms(optPath, 1);
     }
 
 public:
@@ -316,7 +323,7 @@ public:
             map.push_back(coord);
         }
 
-        if(mode == Mode::MST) calculateMST();
+        if(mode == Mode::MST) calculateMST(true);
         else if(mode == Mode::FASTTSP) calculateFastTSP(true);
         else calculateOptTSP();
 
