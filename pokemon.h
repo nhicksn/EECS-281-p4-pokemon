@@ -251,6 +251,11 @@ private:
     bool promising(const std::vector<vertex> &path, size_t permLength) {
         // do things
         path[0]; permLength++; // for compilation
+
+        double expectedWeight = DBL_MAX;
+
+
+        if(expectedWeight > upperBound) return false;
         return true;
     }
 
@@ -279,6 +284,9 @@ private:
     // CALCULATEOPTTSP --> TODO
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
+
+        upperBound = calculateFastTSP(false); // this is the upper bound used for pruning
+
         optPath.reserve(map.size());
         optPath.push_back(map[0]);
         genPerms(optPath, 1);
