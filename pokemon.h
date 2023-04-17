@@ -298,6 +298,7 @@ private:
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
+            currentWeight -= distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             return;
         }  // if ..complete path
 
