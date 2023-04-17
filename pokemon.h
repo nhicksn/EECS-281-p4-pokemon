@@ -7,6 +7,7 @@
 #include <vector>
 #include <cfloat>
 #include <cmath>
+#include <numeric>
 
 enum class Mode {
     MST,
@@ -32,9 +33,10 @@ struct primsInfo {
 struct vertex {
     int32_t x;
     int32_t y;
+    uint32_t index; // for part C
 
     vertex() : x(0), y(0) { }
-    vertex(const int32_t &xIn, const int32_t &yIn) : x(xIn), y(yIn) { }
+    vertex(const int32_t &xIn, const int32_t &yIn, const int32_t &indexIn) : x(xIn), y(yIn), index(indexIn) { }
 };
 
 class pokemon {
@@ -47,8 +49,12 @@ private:
 
     std::vector<primsInfo> prims; // for part A
 
-    double upperBound; // for part C
-    std::vector<vertex> optPath; // for part C
+    // for part C
+    double upperBound;
+    std::vector<uint32_t> optPath;
+    std::vector<uint32_t> currentPath;
+    double currentWeight = 0;
+    //
 
     void printHelp() {
         std::cout << "Usage: ./poke [-h] || [-m && [MST || FASTTSP || OPTTSP]]\n";
@@ -246,56 +252,86 @@ private:
         return totalWeight;
     }
 
+    // PARTIALMST --> TODO
+    // used by promising to calculate a partial MST containing only vertices not in the partial solution
+    double partialMST(const std::vector<std::pair<uint32_t, uint32_t>> &vertices) {
+        vertices[0];
+        return 0;
+    }
+
     // PROMISING --> TODO
     // used by genPerms to see if a partial solution should be pruned
-    bool promising(const std::vector<vertex> &path, size_t permLength) {
+    bool promising(const size_t &permLength) {
 
         // from IA notes:
         // calculate MST of remaining vertices, and connect it to the partial solution
         // with the shortest arms possible
         // compare to the upper bound, and decide if promising
 
-        // do things
-        path[0]; permLength++; // for compilation
-
-        double expectedWeight = DBL_MAX;
+        // if cost of calculating is more than just returning true
+        if(currentPath.size() - permLength < 5) return true;
 
 
+        // calculate MST of remaining vertices
+        double expectedWeight = 0;
+
+
+        // connect to partial solution with the shortest arms possible
+
+
+        // calculate total weight
+
+
+        // compare to upper bound
         if(expectedWeight > upperBound) return false;
         return true;
     }
 
-    // GENPERMS --> TODO
+    // GENPERMS
     // finds the optimal TSP solution
     // used by calculateOPTTSP for part C
-    void genPerms(std::vector<vertex> &path, size_t permLength) {
-        if (permLength == path.size()) {
-            // Do something with the path
+    void genPerms(const size_t &permLength) {
+        if (permLength == numCoords) {
+            // connect path back to the beginning
+            currentWeight += distanceTSP(currentPath[numCoords - 1], currentPath[0]);
+            if(currentWeight < upperBound) {
+                optPath = currentPath;
+                upperBound = currentWeight;
+            }
             return;
         }  // if ..complete path
 
-        if (!promising(path, permLength)) {
+        if (!promising(permLength)) {
             return;
         }  // if ..not promising
 
-        for (size_t i = permLength; i < path.size(); ++i) {
-            std::swap(path[permLength], path[i]);
-            genPerms(path, permLength + 1);
-            std::swap(path[permLength], path[i]);
+        for (size_t i = permLength; i < numCoords; ++i) {
+            std::swap(currentPath[permLength], currentPath[i]);
+            currentWeight += distanceTSP(currentPath[permLength - 1], currentPath[permLength]);
+            genPerms(permLength + 1);
+            currentWeight -= distanceTSP(currentPath[permLength - 1], currentPath[permLength]);
+            std::swap(currentPath[permLength], currentPath[i]);
         }  // for ..unpermuted elements
     }  // genPerms()
 
 
     // PART C
-    // CALCULATEOPTTSP --> TODO
+    // CALCULATEOPTTSP
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
-
         upperBound = calculateFastTSP(false); // this is the upper bound used for pruning
+        optPath.resize(numCoords); std::iota(begin(optPath), end(optPath), 0);
+        currentPath.resize(numCoords); std::iota(begin(currentPath), end(currentPath), 0);
 
-        optPath.reserve(map.size());
-        optPath.push_back(map[0]);
-        genPerms(optPath, 1);
+        genPerms(1);
+
+        std::cout << upperBound << '\n';
+
+        for(uint32_t i = 0; i < numCoords; i++) {
+            std::cout << optPath[i] << ' ';
+        }
+
+        std::cout << '\n';
     }
 
 public:
@@ -311,14 +347,13 @@ public:
         std::cin >> numCoords;
         map.reserve(numCoords);
         if(mode == Mode::MST) prims.reserve(numCoords);
-        
-        for(uint32_t i = 0; i < numCoords; i++) {
+        vertex coord;
+            for(uint32_t i = 0; i < numCoords; i++) {
 
             // initialize coord with x and y coordinate
-            vertex coord;
             int32_t xIn; std::cin >> xIn;
             int32_t yIn; std::cin >> yIn;
-            coord.x = xIn; coord.y = yIn;
+            coord.x = xIn; coord.y = yIn; coord.index = i;
 
             // fill in info needed for prims
             if(mode == Mode::MST) {
