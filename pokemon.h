@@ -322,7 +322,7 @@ private:
     bool promising(const size_t &permLength) {
 
         // if cost of calculating is more than just returning true
-        if(currentPath.size() - permLength < 5) return true;
+        if(currentPath.size() - permLength < 6) return true; // TODO: not sure if this should be < 5 or < 6
 
         double dis;
         double minDistance1 = DBL_MAX;
