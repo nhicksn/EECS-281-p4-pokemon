@@ -322,7 +322,7 @@ private:
     bool promising(const size_t &permLength) {
 
         // if cost of calculating is more than just returning true
-        // if(currentPath.size() - permLength < 5) return true;
+        if(currentPath.size() - permLength < 5) return true;
 
         double dis;
         double minDistance1 = DBL_MAX;
@@ -341,12 +341,12 @@ private:
         expectedWeight += minDistance1 + minDistance2;
 
         // debug output
-        for (size_t i = 0; i < currentPath.size(); ++i)
-            std::cerr << std::setw(2) << currentPath[i] << ' ';
-        std::cerr << std::setw(4) << permLength << std::setw(10) << currentWeight;
-        std::cerr << std::setw(10) << minDistance1 << std::setw(10) << minDistance2;
-        std::cerr << std::setw(10) << partialMST(permLength) << std::setw(10); 
-        std::cerr << expectedWeight << "  " << (expectedWeight < upperBound) << '\n';
+        // for (size_t i = 0; i < currentPath.size(); ++i)
+        //     std::cerr << std::setw(2) << currentPath[i] << ' ';
+        // std::cerr << std::setw(4) << permLength << std::setw(10) << currentWeight;
+        // std::cerr << std::setw(10) << minDistance1 << std::setw(10) << minDistance2;
+        // std::cerr << std::setw(10) << partialMST(permLength) << std::setw(10); 
+        // std::cerr << expectedWeight << "  " << (expectedWeight < upperBound) << '\n';
 
         // compare to upper bound
         if(expectedWeight < upperBound) return true;
