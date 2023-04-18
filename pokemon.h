@@ -27,14 +27,18 @@ enum class TerrainType {
 // only for part A
 struct primsInfo {
     TerrainType terrain;
-    bool visited = false;
-    uint32_t distance = UINT32_MAX; // will be the distance squared --> square root when outputting!
+    bool visited;
+    uint32_t distance; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
+
+    primsInfo() : visited(false), distance(UINT32_MAX) { }
 };
 
 struct primsInfoC {
-    bool visited = false;
-    uint32_t distance = UINT32_MAX; // distance squared
+    bool visited;
+    uint32_t distance; // distance squared
+
+    primsInfoC() : visited(false), distance(UINT32_MAX) { }
 };
 
 struct vertex {
@@ -42,7 +46,6 @@ struct vertex {
     int32_t y;
 
     vertex() : x(0), y(0) { }
-    vertex(const int32_t &xIn, const int32_t &yIn) : x(xIn), y(yIn) { }
 };
 
 class pokemon {
@@ -262,24 +265,23 @@ private:
     // used by promising to calculate a partial MST containing only vertices not in the partial solution
     double partialMST(const size_t &permLength) {
 
-        // change this function
-        std::vector<primsInfoC> prims; prims.resize(currentPath.size() - permLength);
+        std::vector<primsInfoC> primsC; primsC.resize(currentPath.size() - permLength);
         
         // first vertex is starting point
-        prims[0].distance = 0;
+        primsC[0].distance = 0;
 
         uint32_t currentIndex = 0;
         double minDistance;
         double dis;
 
-        for(uint32_t i = 0; i < prims.size(); i++) {
+        for(uint32_t i = 0; i < primsC.size(); i++) {
 
             minDistance = UINT32_MAX;
             
             // find the vertex with the smallest distance, use that as current node
-            for(uint32_t j = 0; j < prims.size(); j++) {
-                if(prims[j].visited == false && prims[j].distance < minDistance) {
-                    minDistance = prims[j].distance;
+            for(uint32_t j = 0; j < primsC.size(); j++) {
+                if(primsC[j].visited == false && primsC[j].distance < minDistance) {
+                    minDistance = primsC[j].distance;
                     currentIndex = j;
                 }
             }
@@ -294,13 +296,13 @@ private:
             //
 
             // set current node to visited
-            prims[currentIndex].visited = true;
+            primsC[currentIndex].visited = true;
 
             // update all distances
-            for(uint32_t j = 0; j < prims.size(); j++) {
+            for(uint32_t j = 0; j < primsC.size(); j++) {
                 dis = distanceTSP(currentPath[currentIndex + permLength], currentPath[j + permLength]);
-                if(prims[j].visited == false && dis < prims[j].distance) {
-                    prims[j].distance = uint32_t(dis);
+                if(primsC[j].visited == false && dis < primsC[j].distance) {
+                    primsC[j].distance = uint32_t(dis);
                 }
             }
             //
@@ -310,17 +312,17 @@ private:
         double totalWeight = 0;
 
         // need to find total weight of all edges
-        for(uint32_t i = 1; i < prims.size(); i++) {
-            totalWeight += prims[i].distance;
+        for(uint32_t i = 1; i < primsC.size(); i++) {
+            totalWeight += primsC[i].distance;
         }
 
         return totalWeight;
     }
 
-    // PROMISING --> TODO
+    // PROMISING
     // used by genPerms to see if a partial solution should be pruned
     bool promising(const size_t &permLength) {
-        
+
         // if cost of calculating is more than just returning true
         if(currentPath.size() - permLength < 5) return true;
 
