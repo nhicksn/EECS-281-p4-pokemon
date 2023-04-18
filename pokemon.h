@@ -362,7 +362,6 @@ private:
             temp = distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             currentWeight += temp;
             if(currentWeight < upperBound) {
-                std::cerr << "New best cost achieved: " << currentWeight << '\n';
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
