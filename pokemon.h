@@ -8,6 +8,7 @@
 #include <cfloat>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 
 enum class Mode {
     MST,
@@ -28,6 +29,15 @@ struct primsInfo {
     bool visited = false;
     uint32_t distance = UINT32_MAX; // will be the distance squared --> square root when outputting!
     uint32_t parentIndex;
+};
+
+struct primsInfoC {
+    bool visited = false;
+    uint32_t distance = UINT32_MAX; // distance squared
+    int32_t x;
+    int32_t y;
+
+    primsInfoC() : x(0), y(0) { }
 };
 
 struct vertex {
@@ -252,11 +262,59 @@ private:
         return totalWeight;
     }
 
-    // PARTIALMST --> TODO
+    // PARTIALMST
     // used by promising to calculate a partial MST containing only vertices not in the partial solution
-    double partialMST(const std::vector<std::pair<uint32_t, uint32_t>> &vertices) {
-        vertices[0];
-        return 0;
+    double partialMST(std::vector<primsInfoC> &vertices) {
+        // first vertex is starting point
+        vertices[0].distance = 0;
+
+        uint32_t currentIndex = 0;
+        double minDistance;
+        double dis;
+
+        for(uint32_t i = 0; i < vertices.size(); i++) {
+
+            minDistance = UINT32_MAX;
+            
+            // find the vertex with the smallest distance, use that as current node
+            for(uint32_t j = 0; j < numCoords; j++) {
+                if(vertices[j].visited == false && vertices[j].distance < minDistance) {
+                    minDistance = vertices[j].distance;
+                    currentIndex = j;
+                }
+            }
+            //
+
+            // verify that a valid node has been found
+            // i.e. check that an MST can be constructed
+            if(minDistance == UINT32_MAX) {
+                std::cerr << "Cannot construct MST\n";
+                std::exit(1);
+            }
+            //
+
+            // set current node to visited
+            vertices[currentIndex].visited = true;
+
+            // update all distances
+            for(uint32_t j = 0; j < numCoords; j++) {
+                dis = distanceTSP(currentIndex, j);
+                if(vertices[j].visited == false && dis < vertices[j].distance) {
+                    vertices[j].distance = uint32_t(dis);
+                }
+            }
+            //
+
+        }
+
+        double totalWeight = 0;
+
+        // need to find total weight of all edges
+        for(uint32_t i = 1; i < vertices.size(); i++) {
+            totalWeight += std::sqrt(vertices[i].distance);
+        }
+
+        return totalWeight;
     }
 
     // PROMISING --> TODO
@@ -273,8 +331,25 @@ private:
 
 
         // calculate MST of remaining vertices
-        double expectedWeight = 0;
 
+        std::vector<primsInfoC> vertices; vertices.reserve(numCoords - permLength);
+
+        primsInfoC xycoord;
+
+        // get vertices that haven't been visited yet
+        for(uint32_t i = 0; i < numCoords; i++) {
+            if(std::find(begin(currentPath), end(currentPath), i) != end(currentPath)) {
+                // index is already in the path
+                continue;
+            }
+            else {
+                xycoord.x = map[i].x;
+                xycoord.y = map[i].y;
+                vertices.push_back(xycoord);
+            }
+        }
+
+        double expectedWeight = partialMST(vertices);
 
         // connect to partial solution with the shortest arms possible
 
