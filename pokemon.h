@@ -337,7 +337,6 @@ private:
 
         // get vertices that haven't been visited yet
         auto it = currentPath.begin(); std::advance(it, permLength);
-        std::for_each(currentPath.begin(), it, [](int i)->void {std::cout << i << '\n';});
         for(uint32_t i = 0; i < numCoords; i++) {
             if(std::find(currentPath.begin(), it, i) != it) {
                 // index is already in the path
@@ -349,8 +348,7 @@ private:
             }
         }
 
-        double expectedWeight = partialMST(vertices);
-        std::cout << expectedWeight << '\n';
+        double expectedWeight = partialMST(vertices) + currentWeight;
 
         // connect to partial solution with the shortest arms possible
 
