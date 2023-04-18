@@ -10,6 +10,7 @@
 #include <numeric>
 #include <algorithm>
 #include <iterator>
+#include <iomanip>
 
 enum class Mode {
     MST,
@@ -36,7 +37,7 @@ struct primsInfo {
 
 struct primsInfoC {
     bool visited;
-    uint32_t distance;
+    uint32_t distance; // distance squared
 
     primsInfoC() : visited(false), distance(UINT32_MAX) { }
 };
@@ -219,7 +220,7 @@ private:
     // PART B
     // CALCULATEFASTTSP
     // used by run sim once all the input has been done to do part B
-    double calculateFastTSP(const bool &output) {
+    void calculateFastTSP(const bool &output) {
 
         std::vector<uint32_t> path; path.reserve(numCoords + 1);
         path.push_back(0); path.push_back(1);
@@ -249,7 +250,7 @@ private:
             totalWeight += distanceTSP(path[i], path[i + 1]);
         }
 
-        if(!output) { optPath = path; return totalWeight; }
+        if(!output) { optPath = path; upperBound = totalWeight; return; }
 
         std::cout << totalWeight << '\n';
 
@@ -259,7 +260,11 @@ private:
 
         std::cout << '\n';
 
-        return totalWeight;
+    }
+
+    double distanceC(const uint32_t &index1, const uint32_t &index2) {
+        return double(map[index1].x - map[index2].x)*double(map[index1].x - map[index2].x) 
+                + double(map[index1].y - map[index2].y)*double(map[index1].y - map[index2].y);
     }
 
     // PARTIALMST
@@ -293,7 +298,7 @@ private:
 
             // update all distances
             for(uint32_t j = 0; j < primsC.size(); j++) {
-                dis = distanceTSP(currentPath[currentIndex + permLength], currentPath[j + permLength]);
+                dis = distanceC(currentPath[currentIndex + permLength], currentPath[j + permLength]);
                 if(primsC[j].visited == false && dis < primsC[j].distance) {
                     primsC[j].distance = uint32_t(dis);
                 }
@@ -306,7 +311,7 @@ private:
 
         // need to find total weight of all edges
         for(uint32_t i = 1; i < primsC.size(); i++) {
-            totalWeight += primsC[i].distance;
+            totalWeight += std::sqrt(primsC[i].distance);
         }
 
         return totalWeight;
@@ -320,29 +325,20 @@ private:
         if(currentPath.size() - permLength < 5) return true;
 
         double dis;
-        double minDistance = DBL_MAX;
+        double minDistance1 = DBL_MAX;
+        double minDistance2 = DBL_MAX;
 
         // calculate MST of remaining vertices
         double expectedWeight = partialMST(permLength) + currentWeight;
 
-        // find shortest connection to vertex 0
+        // find shortest arms
         for(size_t i = permLength; i < numCoords; i++) {
             dis = distanceTSP(currentPath[i], currentPath[0]);
-            if(dis < minDistance) {
-                minDistance = dis;
-            }
-        }
-        expectedWeight += minDistance;
-        minDistance = DBL_MAX;
-
-        // find shortest connection to vertex permLength - 1
-        for(size_t i = permLength; i < numCoords; i++) {
+            if(dis < minDistance1) minDistance1 = dis;
             dis = distanceTSP(currentPath[i], currentPath[permLength - 1]);
-            if(dis < minDistance) {
-                minDistance = dis;
-            }
+            if(dis < minDistance2) minDistance2 = dis;
         }
-        expectedWeight += minDistance;
+        expectedWeight += minDistance1 + minDistance2;
 
         // compare to upper bound
         if(expectedWeight > upperBound) return false;
@@ -384,8 +380,8 @@ private:
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
         optPath.resize(numCoords);
-        upperBound = calculateFastTSP(false); // this is the upper bound used for pruning
         currentPath.resize(numCoords); std::iota(begin(currentPath), end(currentPath), 0);
+        calculateFastTSP(false); // this is the upper bound used for pruning
 
         genPerms(1);
 
