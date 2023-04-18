@@ -1,35 +1,3 @@
-I ran this with -m OPTTSP < sample-e.txt, and saved additional output.
-To make things easier to reproduce, I started with the beginning path as
-shown below, and the "best path length" was my Part B result.  In the
-table, the "PL" column is permLength.
-
-To create the table, the code looks something like this:
-// Do this once, in main()
-cerr << fixed << showpoint << setprecision(2);
-
-// Do this inside of promising:
-for (size_t i = 0; i < path.size(); ++i)
-    cerr << setw(2) << path[i] << ' ';
-cerr << setw(4) << permLength << setw(10) << curCost;
-cerr << setw(10) << arm1Len << setw(10) << arm2Len;
-cerr << setw(10) << mstCost << setw(10) << totalEst << "  " << promise << '\n';
-
-Make sure you don't submit this code to the autograder!  The largest
-test cases will produce hundreds of thousands of lines of output, and
-slow down your program (before being terminated for going over the
-limit on file size).
-
-Some students have reported that Xcode won't allow this; apparently it's
-producing too much error output.  Just run it in the terminal like this:
-    ./poke -m OPTTSP < sample-e.txt >& my-debug-output.txt
-The ">&" means all output is redirected to the file, even error output.
-
-YOU MUST USE THESE FOR YOUR "Part B" output to get the same results.
-  Also disable the promising() check for "small enough unvisited returns true".
-
-Best path length = 336.74
-Current path =  0  1  2  3  4  5  6  7  8  9 10 
-
 Path                               PL   curCost     arm 1     arm 2       MST     Total  Promising?
  0  1  2  3  4  5  6  7  8  9 10    1      0.00     25.50     25.50    212.15    263.14  true
  0  1  2  3  4  5  6  7  8  9 10    2     43.10     25.50     26.93    217.31    312.83  true
