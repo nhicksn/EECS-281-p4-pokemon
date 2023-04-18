@@ -320,26 +320,28 @@ private:
     // PROMISING --> TODO
     // used by genPerms to see if a partial solution should be pruned
     bool promising(const size_t &permLength) {
-
-        // from IA notes:
-        // calculate MST of remaining vertices, and connect it to the partial solution
-        // with the shortest arms possible
-        // compare to the upper bound, and decide if promising
-
+        
         // if cost of calculating is more than just returning true
         if(currentPath.size() - permLength < 5) return true;
 
-        // calculate MST of remaining vertices
+        double temp;
+        double minDistance = DBL_MAX;
 
+        // calculate MST of remaining vertices
         double expectedWeight = partialMST(permLength) + currentWeight;
 
         // find shortest connection to vertex 0
-        double minDistance = DBL_MAX;
 
         for(size_t i = permLength; i < numCoords; i++) {
-            if(minDistance > distanceTSP(currentPath[i], currentPath[0])) {
-                minDistance = distanceTSP(currentPath[i], currentPath[0]);
+            temp = distanceTSP(currentPath[i], currentPath[0]);
+            if(minDistance > temp) {
+                minDistance = temp;
             }
+        }
+
+        if(minDistance == DBL_MAX) {
+            std::cout << "problem finding shortest arm to first point in path\n";
+            exit(0);
         }
 
         expectedWeight += minDistance;
@@ -348,9 +350,15 @@ private:
 
         // find shortest connection to vertex permLength - 1
         for(size_t i = permLength; i < numCoords; i++) {
-            if(minDistance > distanceTSP(currentPath[i], currentPath[permLength - 1])) {
-                minDistance = distanceTSP(currentPath[i], currentPath[permLength - 1]);
+            temp = distanceTSP(currentPath[i], currentPath[permLength - 1]);
+            if(minDistance > temp) {
+                minDistance = temp;
             }
+        }
+
+        if(minDistance == DBL_MAX) {
+            std::cout << "problem finding shortest arm to last point in path\n";
+            exit(0);
         }
 
         expectedWeight += minDistance;
@@ -366,12 +374,13 @@ private:
     void genPerms(const size_t &permLength) {
         if (permLength == numCoords) {
             // connect path back to the beginning
-            currentWeight += distanceTSP(currentPath[numCoords - 1], currentPath[0]);
-            if(currentWeight < upperBound) {
+            double temp = distanceTSP(currentPath[numCoords - 1], currentPath[0]);
+            currentWeight += temp;
+            if(upperBound > currentWeight) {
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
-            currentWeight -= distanceTSP(currentPath[numCoords - 1], currentPath[0]);
+            currentWeight -= temp;
             return;
         }  // if ..complete path
 
@@ -400,11 +409,9 @@ private:
         genPerms(1);
 
         std::cout << upperBound << '\n';
-
         for(uint32_t i = 0; i < numCoords; i++) {
             std::cout << optPath[i] << ' ';
         }
-
         std::cout << '\n';
     }
 
