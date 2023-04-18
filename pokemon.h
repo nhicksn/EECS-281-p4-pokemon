@@ -249,7 +249,7 @@ private:
             totalWeight += distanceTSP(path[i], path[i + 1]);
         }
 
-        if(!output) return totalWeight;
+        if(!output) { optPath = path; return totalWeight; }
 
         std::cout << totalWeight << '\n';
 
