@@ -9,6 +9,7 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <iterator>
 
 enum class Mode {
     MST,
@@ -34,19 +35,17 @@ struct primsInfo {
 struct primsInfoC {
     bool visited = false;
     uint32_t distance = UINT32_MAX; // distance squared
-    int32_t x;
-    int32_t y;
+    uint32_t index;
 
-    primsInfoC() : x(0), y(0) { }
+    primsInfoC() : index(0) { }
 };
 
 struct vertex {
     int32_t x;
     int32_t y;
-    uint32_t index; // for part C
 
     vertex() : x(0), y(0) { }
-    vertex(const int32_t &xIn, const int32_t &yIn, const int32_t &indexIn) : x(xIn), y(yIn), index(indexIn) { }
+    vertex(const int32_t &xIn, const int32_t &yIn) : x(xIn), y(yIn) { }
 };
 
 class pokemon {
@@ -277,7 +276,7 @@ private:
             minDistance = UINT32_MAX;
             
             // find the vertex with the smallest distance, use that as current node
-            for(uint32_t j = 0; j < numCoords; j++) {
+            for(uint32_t j = 0; j < vertices.size(); j++) {
                 if(vertices[j].visited == false && vertices[j].distance < minDistance) {
                     minDistance = vertices[j].distance;
                     currentIndex = j;
@@ -297,8 +296,8 @@ private:
             vertices[currentIndex].visited = true;
 
             // update all distances
-            for(uint32_t j = 0; j < numCoords; j++) {
-                dis = distanceTSP(currentIndex, j);
+            for(uint32_t j = 0; j < vertices.size(); j++) {
+                dis = distanceTSP(vertices[currentIndex].index, vertices[j].index);
                 if(vertices[j].visited == false && dis < vertices[j].distance) {
                     vertices[j].distance = uint32_t(dis);
                 }
@@ -337,14 +336,14 @@ private:
         primsInfoC xycoord;
 
         // get vertices that haven't been visited yet
+        auto it = currentPath.begin(); std::advance(it, permLength);
         for(uint32_t i = 0; i < numCoords; i++) {
-            if(std::find(begin(currentPath), end(currentPath), i) != end(currentPath)) {
+            if(std::find(currentPath.begin(), it, i) != it) {
                 // index is already in the path
                 continue;
             }
             else {
-                xycoord.x = map[i].x;
-                xycoord.y = map[i].y;
+                xycoord.index = i;
                 vertices.push_back(xycoord);
             }
         }
@@ -429,7 +428,7 @@ public:
             // initialize coord with x and y coordinate
             int32_t xIn; std::cin >> xIn;
             int32_t yIn; std::cin >> yIn;
-            coord.x = xIn; coord.y = yIn; coord.index = i;
+            coord.x = xIn; coord.y = yIn;
 
             // fill in info needed for prims
             if(mode == Mode::MST) {
