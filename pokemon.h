@@ -35,9 +35,6 @@ struct primsInfo {
 struct primsInfoC {
     bool visited = false;
     uint32_t distance = UINT32_MAX; // distance squared
-    uint32_t index;
-
-    primsInfoC() : index(0) { }
 };
 
 struct vertex {
@@ -263,22 +260,26 @@ private:
 
     // PARTIALMST
     // used by promising to calculate a partial MST containing only vertices not in the partial solution
-    double partialMST(std::vector<primsInfoC> &vertices) {
+    double partialMST(const size_t &permLength) {
+
+        // change this function
+        std::vector<primsInfoC> prims; prims.resize(currentPath.size() - permLength);
+        
         // first vertex is starting point
-        vertices[0].distance = 0;
+        prims[0].distance = 0;
 
         uint32_t currentIndex = 0;
         double minDistance;
         double dis;
 
-        for(uint32_t i = 0; i < vertices.size(); i++) {
+        for(uint32_t i = 0; i < prims.size(); i++) {
 
             minDistance = UINT32_MAX;
             
             // find the vertex with the smallest distance, use that as current node
-            for(uint32_t j = 0; j < vertices.size(); j++) {
-                if(vertices[j].visited == false && vertices[j].distance < minDistance) {
-                    minDistance = vertices[j].distance;
+            for(uint32_t j = 0; j < prims.size(); j++) {
+                if(prims[j].visited == false && prims[j].distance < minDistance) {
+                    minDistance = prims[j].distance;
                     currentIndex = j;
                 }
             }
@@ -293,13 +294,13 @@ private:
             //
 
             // set current node to visited
-            vertices[currentIndex].visited = true;
+            prims[currentIndex].visited = true;
 
             // update all distances
-            for(uint32_t j = 0; j < vertices.size(); j++) {
-                dis = distanceTSP(vertices[currentIndex].index, vertices[j].index);
-                if(vertices[j].visited == false && dis < vertices[j].distance) {
-                    vertices[j].distance = uint32_t(dis);
+            for(uint32_t j = 0; j < prims.size(); j++) {
+                dis = distanceTSP(currentPath[currentIndex + permLength], currentPath[j + permLength]);
+                if(prims[j].visited == false && dis < prims[j].distance) {
+                    prims[j].distance = uint32_t(dis);
                 }
             }
             //
@@ -309,8 +310,8 @@ private:
         double totalWeight = 0;
 
         // need to find total weight of all edges
-        for(uint32_t i = 1; i < vertices.size(); i++) {
-            totalWeight += vertices[i].distance;
+        for(uint32_t i = 1; i < prims.size(); i++) {
+            totalWeight += prims[i].distance;
         }
 
         return totalWeight;
@@ -328,33 +329,31 @@ private:
         // if cost of calculating is more than just returning true
         if(currentPath.size() - permLength < 5) return true;
 
-
         // calculate MST of remaining vertices
 
-        std::vector<primsInfoC> vertices; vertices.reserve(numCoords - permLength);
+        double expectedWeight = partialMST(permLength) + currentWeight;
 
-        primsInfoC xycoord;
+        // find shortest connection to vertex 0
+        double minDistance = DBL_MAX;
 
-        // get vertices that haven't been visited yet
-        auto it = currentPath.begin(); std::advance(it, permLength);
-        for(uint32_t i = 0; i < numCoords; i++) {
-            if(std::find(currentPath.begin(), it, i) != it) {
-                // index is already in the path
-                continue;
-            }
-            else {
-                xycoord.index = i;
-                vertices.push_back(xycoord);
+        for(size_t i = permLength; i < numCoords; i++) {
+            if(minDistance > distanceTSP(currentPath[i], currentPath[0])) {
+                minDistance = distanceTSP(currentPath[i], currentPath[0]);
             }
         }
 
-        double expectedWeight = partialMST(vertices) + currentWeight;
+        expectedWeight += minDistance;
 
-        // connect to partial solution with the shortest arms possible
+        minDistance = DBL_MAX;
 
+        // find shortest connection to vertex permLength - 1
+        for(size_t i = permLength; i < numCoords; i++) {
+            if(minDistance > distanceTSP(currentPath[i], currentPath[permLength - 1])) {
+                minDistance = distanceTSP(currentPath[i], currentPath[permLength - 1]);
+            }
+        }
 
-        // calculate total weight
-
+        expectedWeight += minDistance;
 
         // compare to upper bound
         if(expectedWeight > upperBound) return false;
