@@ -211,8 +211,8 @@ private:
     // calculates the distance between two points, disregarding terrain constraints
     // used by calculateFastTsp and calculateOptTSP
     double distanceTSP(const uint32_t &index1, const uint32_t &index2) {
-        return double(map[index1].x - map[index2].x) * double(map[index1].x - map[index2].x) +
-                double(map[index1].y - map[index2].y) * double(map[index1].y - map[index2].y);
+        return std::sqrt(double(map[index1].x - map[index2].x) * double(map[index1].x - map[index2].x) +
+                double(map[index1].y - map[index2].y) * double(map[index1].y - map[index2].y));
     }
 
     // PART B
@@ -245,7 +245,7 @@ private:
 
         // calculate weight
         for(uint32_t i = 0; i < numCoords; i++) {
-            totalWeight += std::sqrt(distanceTSP(path[i], path[i + 1]));
+            totalWeight += distanceTSP(path[i], path[i + 1]);
         }
 
         if(output) {
@@ -310,7 +310,7 @@ private:
 
         // need to find total weight of all edges
         for(uint32_t i = 1; i < vertices.size(); i++) {
-            totalWeight += std::sqrt(vertices[i].distance);
+            totalWeight += vertices[i].distance;
         }
 
         return totalWeight;
@@ -367,12 +367,12 @@ private:
     void genPerms(const size_t &permLength) {
         if (permLength == numCoords) {
             // connect path back to the beginning
-            currentWeight += std::sqrt(distanceTSP(currentPath[numCoords - 1], currentPath[0]));
+            currentWeight += distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             if(currentWeight < upperBound) {
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
-            currentWeight -= std::sqrt(distanceTSP(currentPath[numCoords - 1], currentPath[0]));
+            currentWeight -= distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             return;
         }  // if ..complete path
 
@@ -382,9 +382,9 @@ private:
 
         for (size_t i = permLength; i < numCoords; ++i) {
             std::swap(currentPath[permLength], currentPath[i]);
-            currentWeight += std::sqrt(distanceTSP(currentPath[permLength - 1], currentPath[permLength]));
+            currentWeight += distanceTSP(currentPath[permLength - 1], currentPath[permLength]);
             genPerms(permLength + 1);
-            currentWeight -= std::sqrt(distanceTSP(currentPath[permLength - 1], currentPath[permLength]));
+            currentWeight -= distanceTSP(currentPath[permLength - 1], currentPath[permLength]);
             std::swap(currentPath[permLength], currentPath[i]);
         }  // for ..unpermuted elements
     }  // genPerms()
