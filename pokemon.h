@@ -26,17 +26,17 @@ enum class TerrainType {
 
 // only for part A
 struct primsInfo {
-    TerrainType terrain;
     bool visited;
-    uint32_t distance; // will be the distance squared --> square root when outputting!
+    uint32_t distance; // distance squared
     uint32_t parentIndex;
+    TerrainType terrain;
 
-    primsInfo() : visited(false), distance(UINT32_MAX) { }
+    primsInfo() : visited(false), distance(UINT32_MAX), parentIndex(UINT32_MAX), terrain(TerrainType::Land) { }
 };
 
 struct primsInfoC {
     bool visited;
-    uint32_t distance; // distance squared
+    uint32_t distance;
 
     primsInfoC() : visited(false), distance(UINT32_MAX) { }
 };
@@ -60,9 +60,10 @@ private:
 
     // for part C
     double upperBound;
+    double currentWeight;
+    double temp;
     std::vector<uint32_t> optPath;
     std::vector<uint32_t> currentPath;
-    double currentWeight = 0;
     //
 
     void printHelp() {
@@ -248,15 +249,15 @@ private:
             totalWeight += distanceTSP(path[i], path[i + 1]);
         }
 
-        if(output) {
-            std::cout << totalWeight << '\n';
+        if(!output) return totalWeight;
 
-            for(uint32_t i = 0; i < numCoords; i++) {
-                std::cout << path[i] << ' ';
-            }
+        std::cout << totalWeight << '\n';
 
-            std::cout << '\n';
+        for(uint32_t i = 0; i < numCoords; i++) {
+            std::cout << path[i] << ' ';
         }
+
+        std::cout << '\n';
 
         return totalWeight;
     }
@@ -284,14 +285,6 @@ private:
                     minDistance = primsC[j].distance;
                     currentIndex = j;
                 }
-            }
-            //
-
-            // verify that a valid node has been found
-            // i.e. check that an MST can be constructed
-            if(minDistance == UINT32_MAX) {
-                std::cerr << "Cannot construct MST\n";
-                std::exit(1);
             }
             //
 
@@ -326,43 +319,29 @@ private:
         // if cost of calculating is more than just returning true
         if(currentPath.size() - permLength < 5) return true;
 
-        double temp;
+        double dis;
         double minDistance = DBL_MAX;
 
         // calculate MST of remaining vertices
         double expectedWeight = partialMST(permLength) + currentWeight;
 
         // find shortest connection to vertex 0
-
         for(size_t i = permLength; i < numCoords; i++) {
-            temp = distanceTSP(currentPath[i], currentPath[0]);
-            if(minDistance > temp) {
-                minDistance = temp;
+            dis = distanceTSP(currentPath[i], currentPath[0]);
+            if(dis < minDistance) {
+                minDistance = dis;
             }
         }
-
-        if(minDistance == DBL_MAX) {
-            std::cout << "problem finding shortest arm to first point in path\n";
-            exit(0);
-        }
-
         expectedWeight += minDistance;
-
         minDistance = DBL_MAX;
 
         // find shortest connection to vertex permLength - 1
         for(size_t i = permLength; i < numCoords; i++) {
-            temp = distanceTSP(currentPath[i], currentPath[permLength - 1]);
-            if(minDistance > temp) {
-                minDistance = temp;
+            dis = distanceTSP(currentPath[i], currentPath[permLength - 1]);
+            if(dis < minDistance) {
+                minDistance = dis;
             }
         }
-
-        if(minDistance == DBL_MAX) {
-            std::cout << "problem finding shortest arm to last point in path\n";
-            exit(0);
-        }
-
         expectedWeight += minDistance;
 
         // compare to upper bound
@@ -376,9 +355,9 @@ private:
     void genPerms(const size_t &permLength) {
         if (permLength == numCoords) {
             // connect path back to the beginning
-            double temp = distanceTSP(currentPath[numCoords - 1], currentPath[0]);
+            temp = distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             currentWeight += temp;
-            if(upperBound > currentWeight) {
+            if(currentWeight < upperBound) {
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
@@ -419,7 +398,7 @@ private:
 
 public:
     
-    pokemon(const int &argc, char* argv[]) { getMode(argc, argv); }
+    pokemon(const int &argc, char* argv[]) : currentWeight(0) { getMode(argc, argv); }
 
     // RUN
     // called by the user to find the solution they're looking for, reads input
