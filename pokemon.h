@@ -383,8 +383,8 @@ private:
     // CALCULATEOPTTSP
     // used by run sim once all the input has been done to do part C
     void calculateOptTSP() {
+        optPath.resize(numCoords);
         upperBound = calculateFastTSP(false); // this is the upper bound used for pruning
-        optPath.resize(numCoords); std::iota(begin(optPath), end(optPath), 0);
         currentPath.resize(numCoords); std::iota(begin(currentPath), end(currentPath), 0);
 
         genPerms(1);
