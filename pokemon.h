@@ -53,6 +53,8 @@ class pokemon {
 
 private:
 
+    bool debug = false;
+
     std::vector<vertex> map;
     Mode mode = Mode::None;
     uint32_t numCoords;
@@ -82,11 +84,17 @@ private:
         option long_options[] = {
             { "help",         no_argument,       nullptr, 'h'  },
             { "mode",         required_argument, nullptr, 'm'  },
+            { "debug",        no_argument,       nullptr, 'd'  },
             { nullptr,        0,                 nullptr, '\0' },
         }; // long_options
 
-        while((choice = getopt_long(argc, argv, "hm:", long_options, &index)) != -1) {
+        while((choice = getopt_long(argc, argv, "dhm:", long_options, &index)) != -1) {
             switch(choice) {
+                case 'd': {
+                    debug = true;
+                    break;
+                }
+
                 case 'h': {
                     printHelp();
                     std::exit(0);
@@ -341,12 +349,14 @@ private:
         expectedWeight += minDistance1 + minDistance2;
 
         // debug output
-        // for (size_t i = 0; i < currentPath.size(); ++i)
-        //     std::cerr << std::setw(2) << currentPath[i] << ' ';
-        // std::cerr << std::setw(4) << permLength << std::setw(10) << currentWeight;
-        // std::cerr << std::setw(10) << minDistance1 << std::setw(10) << minDistance2;
-        // std::cerr << std::setw(10) << partialMST(permLength) << std::setw(10); 
-        // std::cerr << expectedWeight << "  " << (expectedWeight < upperBound) << '\n';
+        if(debug) {
+            for (size_t i = 0; i < currentPath.size(); ++i)
+                std::cerr << std::setw(2) << currentPath[i] << ' ';
+            std::cerr << std::setw(4) << permLength << std::setw(10) << currentWeight;
+            std::cerr << std::setw(10) << minDistance1 << std::setw(10) << minDistance2;
+            std::cerr << std::setw(10) << partialMST(permLength) << std::setw(10); 
+            std::cerr << expectedWeight << "  " << (expectedWeight < upperBound) << '\n';
+        }
 
         // compare to upper bound
         if(expectedWeight < upperBound) return true;
@@ -362,6 +372,9 @@ private:
             temp = distanceTSP(currentPath[numCoords - 1], currentPath[0]);
             currentWeight += temp;
             if(currentWeight < upperBound) {
+                if(debug) {
+                    std::cout << "New best found: " << currentWeight << '\n';
+                }
                 optPath = currentPath;
                 upperBound = currentWeight;
             }
@@ -408,6 +421,12 @@ public:
     // called by the user to find the solution they're looking for, reads input
     // and calls helper function to find the correct tree
     void run() {
+
+        if(debug) {
+            std::cerr << "Path" << std::setw(30) << "PL" << std::setw(10) << "curCost" << std::setw(10) << "arm 1";
+            std::cerr << std::setw(10) << "arm 2" << std::setw(10) << "MST" << std::setw(10) << "Total" << "  ";
+            std::cerr << "Promising?" << '\n';
+        }
 
         // read the input
         std::cin >> numCoords;
